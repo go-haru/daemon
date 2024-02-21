@@ -127,7 +127,7 @@ func (d *Daemon[id]) Init() error {
 	if !d.status.setInitialized() {
 		return ErrDaemonIsInitialized
 	}
-	var applets, err = d.sortDependency(empty[id]())
+	var applets, err = d.sortDependency(empty[id](), true)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (d *Daemon[id]) Init() error {
 	return nil
 }
 
-func (d *Daemon[id]) sortDependency(target id) ([]Applet[id], error) {
+func (d *Daemon[id]) sortDependency(target id, reverse bool) ([]Applet[id], error) {
 	if d.applets == nil {
 		return []Applet[id]{}, nil
 	}
@@ -154,8 +154,14 @@ func (d *Daemon[id]) sortDependency(target id) ([]Applet[id], error) {
 		return nil, ErrAppletCircularDependency
 	}
 	var appletsList = make([]Applet[id], len(idList))
-	for i, appId := range idList {
-		appletsList[i], _ = d.applets[appId]
+	if reverse {
+		for i, appId := range idList {
+			appletsList[len(idList)-1-i], _ = d.applets[appId]
+		}
+	} else {
+		for i, appId := range idList {
+			appletsList[i], _ = d.applets[appId]
+		}
 	}
 	return appletsList, nil
 }
@@ -166,7 +172,7 @@ func (d *Daemon[id]) Serve() (err error) {
 	}
 	defer d.status.halt()
 	var applets []Applet[id]
-	if applets, err = d.sortDependency(empty[id]()); err != nil {
+	if applets, err = d.sortDependency(empty[id](), true); err != nil {
 		return err
 	}
 	var wg sync.WaitGroup
@@ -215,7 +221,7 @@ func (d *Daemon[id]) Shutdown(ctx context.Context) (err error) {
 	}
 	d.status.setHalting()
 	var applets []Applet[id]
-	if applets, err = d.sortDependency(empty[id]()); err != nil {
+	if applets, err = d.sortDependency(empty[id](), false); err != nil {
 		return err
 	}
 	var errs errorCollection

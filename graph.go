@@ -45,7 +45,7 @@ func (dvr *dagVisitor[id]) visit(node id, queue []id) ([]id, bool) {
 	case graphColorGray:
 		return nil, false
 	case graphColorBlack:
-		return nil, true
+		return queue, true
 	case graphColorWhite:
 		dvr.Colors[node] = graphColorGray
 		var isDAG bool
