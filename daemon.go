@@ -127,7 +127,7 @@ func (d *Daemon[id]) Init() error {
 	if !d.status.setInitialized() {
 		return ErrDaemonIsInitialized
 	}
-	var applets, err = d.sortDependency(empty[id](), true)
+	var applets, err = d.sortDependency(empty[id](), false)
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (d *Daemon[id]) Serve() (err error) {
 	}
 	defer d.status.halt()
 	var applets []Applet[id]
-	if applets, err = d.sortDependency(empty[id](), true); err != nil {
+	if applets, err = d.sortDependency(empty[id](), false); err != nil {
 		return err
 	}
 	var wg sync.WaitGroup
@@ -221,7 +221,7 @@ func (d *Daemon[id]) Shutdown(ctx context.Context) (err error) {
 	}
 	d.status.setHalting()
 	var applets []Applet[id]
-	if applets, err = d.sortDependency(empty[id](), false); err != nil {
+	if applets, err = d.sortDependency(empty[id](), true); err != nil {
 		return err
 	}
 	var errs errorCollection
